@@ -77,17 +77,19 @@ struct WeatherView: View {
         }
     }
 
-    private func convertTime(timeInterval: TimeInterval, timezoneOffset: Int) -> String {
-        let date = Date(timeIntervalSince1970: timeInterval)
-        let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = TimeZone(secondsFromGMT: timezoneOffset + 36000) // Sydney GMT+10
-        dateFormatter.dateFormat = "h:mm a"
-        return dateFormatter.string(from: date)
-    }
+    
+}
+
+func convertTime(timeInterval: TimeInterval, timezoneOffset: Int) -> String {
+    let date = Date(timeIntervalSince1970: timeInterval)
+    let dateFormatter = DateFormatter()
+    dateFormatter.timeZone = TimeZone(secondsFromGMT: timezoneOffset + 36000) // Sydney GMT+10
+    dateFormatter.dateFormat = "h:mm a"
+    return dateFormatter.string(from: date)
 }
 
 struct HourlyWeatherCard: View {
-    let hour: HourlyWeather
+    let hour: WeatherResponse.HourlyWeather
     let timezoneOffset: Int
 
     var body: some View {
@@ -129,10 +131,10 @@ struct SearchBarView: View {
 }
 
 class WeatherService {
-    let apiKey = "your_api_key_here"
+    let apiKey = "645b6c195d49ee0b1f364003c7887e44"
     
     func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-        let urlString = "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
+        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
             return
