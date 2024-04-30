@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+ 
 struct WeatherView: View {
     @State private var weatherResponse: WeatherResponse?
     @State private var city: String = "Sydney"
@@ -210,7 +210,7 @@ let weatherIconMapping: [String: String] = [
     "50n": "cloud.fog.fill" // mist
 ]
 
-// Preview 
+// Preview provider
 struct WeatherView_Previews: PreviewProvider {
     static var previews: some View {
         WeatherView()
