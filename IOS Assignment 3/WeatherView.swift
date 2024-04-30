@@ -7,60 +7,64 @@
 
 import SwiftUI
 
-
 struct WeatherView: View {
     @State private var weatherResponse: WeatherResponse?
     @State private var city: String = "Sydney"
 
     var body: some View {
-        VStack(alignment: .leading) {
-            SearchBarView(searchText: $city)
-            HStack {
-                Text("\(city)")
-                    .font(.title)
-                Spacer()
-                Image(systemName: "gear")
-            }
-            .padding()
-            
-            if let weather = weatherResponse {
-                let formattedTemp = String(format: "%.1f°C", weather.current.temp)
-                Text("Temperature: \(formattedTemp)")
-                    .font(.title)
-                Text("Description: \(weather.current.weather.first?.description ?? "N/A")")
-                Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like))")
-                Text("UV Index: \(weather.current.uvi)")
-                Text("Humidity: \(weather.current.humidity)%")
-                Text("Sunrise: \(convertTime(timeInterval: weather.current.sunrise, timezoneOffset: weather.timezone_offset))")
-                Text("Sunset: \(convertTime(timeInterval: weather.current.sunset, timezoneOffset: weather.timezone_offset))")
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(weather.hourly, id: \.dt) { hour in
-                            VStack {
-                                Text("\(convertTime(timeInterval: hour.dt, timezoneOffset: weather.timezone_offset))")
-                                Text("\(String(format: "%.1f°C", hour.temp))")
-                                Text("Pop: \(Int(hour.pop * 100))%")
-                                Image(systemName: weatherIconMapping[hour.weather.first?.icon ?? "cloud"] ?? "cloud.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
+        NavigationView {
+            ScrollView {
+                VStack {
+                    SearchBarView(searchText: $city)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+
+                    if let weather = weatherResponse {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("\(city)")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+
+                            Text("Temperature: \(String(format: "%.1f°C", weather.current.temp))")
+                                .font(.title)
+                            Text("Description: \(weather.current.weather.first?.description ?? "N/A")")
+                            Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like))")
+                            Text("UV Index: \(weather.current.uvi)")
+                            Text("Humidity: \(weather.current.humidity)%")
+                            Text("Sunrise: \(convertTime(timeInterval: weather.current.sunrise, timezoneOffset: weather.timezone_offset))")
+                            Text("Sunset: \(convertTime(timeInterval: weather.current.sunset, timezoneOffset: weather.timezone_offset))")
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack {
+                                    ForEach(weather.hourly, id: \.dt) { hour in
+                                        HourlyWeatherCard(hour: hour, timezoneOffset: weather.timezone_offset)
+                                    }
+                                }
+                                .padding()
                             }
                         }
+                        .padding()
+                    } else {
+                        Spacer()
+                        Text("Loading weather data...")
+                            .foregroundColor(.gray)
+                        Spacer()
                     }
                 }
-            } else {
-                Text("Loading weather data...")
             }
-
+            .navigationBarTitle("Weather", displayMode: .inline)
+            .navigationBarItems(trailing: Button(action: {
+                loadWeather()
+            }) {
+                Image(systemName: "arrow.clockwise")
+            })
         }
         .onAppear(perform: loadWeather)
-        .padding()
     }
-    
+
     private func loadWeather() {
-        let latitude = -33.865143  // latitude
-        let longitude = 151.209900 // longitude
+        let latitude = -33.8688  // Sydney latitude
+        let longitude = 151.2093 // Sydney longitude
         WeatherService().fetchWeather(latitude: latitude, longitude: longitude) { result in
             switch result {
             case .success(let response):
@@ -72,7 +76,7 @@ struct WeatherView: View {
             }
         }
     }
-    
+
     private func convertTime(timeInterval: TimeInterval, timezoneOffset: Int) -> String {
         let date = Date(timeIntervalSince1970: timeInterval)
         let dateFormatter = DateFormatter()
@@ -82,54 +86,30 @@ struct WeatherView: View {
     }
 }
 
+struct HourlyWeatherCard: View {
+    let hour: HourlyWeather
+    let timezoneOffset: Int
 
-
-
-
-
-
-// 这只是示意用法，具体图标与天气状态的映射需要根据实际情况来设置
-
-let weatherIconMapping: [String: String] = [
-    "01d": "sun.max.fill", // clear sky day
-    "01n": "moon.stars.fill", // clear sky night
-    "02d": "cloud.sun.fill", // few clouds day
-    "02n": "cloud.moon.fill", // few clouds night
-    "03d": "cloud.fill", // scattered clouds
-    "03n": "cloud.fill", // scattered clouds
-    "04d": "smoke.fill", // broken clouds
-    "04n": "smoke.fill", // broken clouds
-    "09d": "cloud.drizzle.fill", // shower rain
-    "09n": "cloud.drizzle.fill", // shower rain
-    "10d": "cloud.heavyrain.fill", // rain day
-    "10n": "cloud.heavyrain.fill", // rain night
-    "11d": "cloud.bolt.fill", // thunderstorm
-    "11n": "cloud.bolt.fill", // thunderstorm
-    "13d": "snowflake", // snow
-    "13n": "snowflake", // snow
-    "50d": "cloud.fog.fill", // mist
-    "50n": "cloud.fog.fill" // mist
-]
-
-
-struct WeatherDetail: View {
-    let imageName: String
-    let detailText: String
-    
     var body: some View {
         VStack {
-            Image(systemName: imageName)
-                .font(.largeTitle)
-                .foregroundColor(.yellow)
-            Text(detailText)
+            Text(convertTime(timeInterval: hour.dt, timezoneOffset: timezoneOffset))
                 .font(.caption)
+            Image(systemName: weatherIconMapping[hour.weather.first?.icon ?? "cloud"] ?? "cloud.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+            Text("\(String(format: "%.1f°C", hour.temp))")
+            Text("Pop: \(Int(hour.pop * 100))%")
         }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.5)))
+        .shadow(radius: 3)
     }
 }
 
 struct SearchBarView: View {
     @Binding var searchText: String
-    
+
     var body: some View {
         ZStack {
             Rectangle()
@@ -149,11 +129,10 @@ struct SearchBarView: View {
 }
 
 class WeatherService {
-    // API key
-    let apiKey = "645b6c195d49ee0b1f364003c7887e44"
+    let apiKey = "your_api_key_here"
     
     func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
+        let urlString = "https://api.openweathermap.org/data/2.5/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
             return
@@ -182,11 +161,10 @@ class WeatherService {
     }
 }
 
-
 struct WeatherResponse: Decodable {
     let current: CurrentWeather
     let hourly: [HourlyWeather]
-    let timezone_offset: Int  
+    let timezone_offset: Int
 
     struct CurrentWeather: Decodable {
         let temp: Double
@@ -201,7 +179,7 @@ struct WeatherResponse: Decodable {
     struct HourlyWeather: Decodable {
         let dt: TimeInterval
         let temp: Double
-        let pop: Double  
+        let pop: Double
         let weather: [WeatherDetail]
     }
     
@@ -211,10 +189,31 @@ struct WeatherResponse: Decodable {
     }
 }
 
+let weatherIconMapping: [String: String] = [
+    "01d": "sun.max.fill", // clear sky day
+    "01n": "moon.stars.fill", // clear sky night
+    "02d": "cloud.sun.fill", // few clouds day
+    "02n": "cloud.moon.fill", // few clouds night
+    "03d": "cloud.fill", // scattered clouds
+    "03n": "cloud.fill", // scattered clouds
+    "04d": "smoke.fill", // broken clouds
+    "04n": "smoke.fill", // broken clouds
+    "09d": "cloud.drizzle.fill", // shower rain
+    "09n": "cloud.drizzle.fill", // shower rain
+    "10d": "cloud.heavyrain.fill", // rain day
+    "10n": "cloud.heavyrain.fill", // rain night
+    "11d": "cloud.bolt.fill", // thunderstorm
+    "11n": "cloud.bolt.fill", // thunderstorm
+    "13d": "snowflake", // snow
+    "13n": "snowflake", // snow
+    "50d": "cloud.fog.fill", // mist
+    "50n": "cloud.fog.fill" // mist
+]
 
-
-
-
-#Preview {
-    WeatherView()
+// Preview 
+struct WeatherView_Previews: PreviewProvider {
+    static var previews: some View {
+        WeatherView()
+    }
 }
+
