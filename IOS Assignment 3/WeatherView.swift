@@ -8,14 +8,12 @@
 import SwiftUI
 
 
-import SwiftUI
-
 struct WeatherView: View {
     @State private var weatherResponse: WeatherResponse?
     @State private var city: String = "Sydney"
 
     var body: some View {
-        VStack(alignment: .leading){
+        VStack(alignment: .leading) {
             SearchBarView(searchText: $city)
             HStack {
                 Text("\(city)")
@@ -24,31 +22,44 @@ struct WeatherView: View {
                 Image(systemName: "gear")
             }
             .padding()
+            
             if let weather = weatherResponse {
-                let formattedTemp = String(format: "%.1f°C", weather.current.temp)
-                Text(formattedTemp)
-                    .font(.system(size: 70))
-                    .fontWeight(.medium)
-                HStack {
-                    ForEach(weather.current.weather, id: \.description) { weatherDetail in
-                        WeatherDetail(imageName: "cloud.fill", detailText: weatherDetail.description.capitalized)
+                let formattedTemp = String(format: "%.1f°C", weather.current.temp - 273.15) // 转换为摄氏度
+                Text("Temperature: \(formattedTemp)")
+                    .font(.title)
+                Text("Description: \(weather.current.weather.first?.description ?? "N/A")")
+                Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like - 273.15))")
+                Text("UV Index: \(weather.current.uvi)")
+                Text("Humidity: \(weather.current.humidity)%")
+                Text("Sunrise: \(convertTime(timeInterval: weather.current.sunrise, timezoneOffset: weather.timezone_offset))")
+                Text("Sunset: \(convertTime(timeInterval: weather.current.sunset, timezoneOffset: weather.timezone_offset))")
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(weather.hourly, id: \.dt) { hour in
+                            VStack {
+                                Text("\(convertTime(timeInterval: hour.dt, timezoneOffset: weather.timezone_offset))")
+                                Text("\(String(format: "%.1f°C", hour.temp - 273.15))")
+                                Text("Pop: \(Int(hour.pop * 100))%")
+                                Image(systemName: weatherIconMapping[hour.weather.first?.icon ?? "cloud"] ?? "cloud.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                            }
+                        }
                     }
-                    let formattedWindSpeed = String(format: "%.1f km/h", weather.current.wind_speed)
-                    WeatherDetail(imageName: "wind", detailText: formattedWindSpeed)
-                    WeatherDetail(imageName: "sunrise.fill", detailText: "Sunrise: \(Date(timeIntervalSince1970: weather.current.sunrise).formatted())")
-                    WeatherDetail(imageName: "sunset.fill", detailText: "Sunset: \(Date(timeIntervalSince1970: weather.current.sunset).formatted())")
                 }
             } else {
                 Text("Loading weather data...")
             }
         }
         .onAppear(perform: loadWeather)
-        Spacer()
+        .padding()
     }
-
+    
     private func loadWeather() {
-        let latitude = 33.44  // 示例纬度
-        let longitude = -94.04 // 示例经度
+        let latitude = -33.8688  // Sydney latitude
+        let longitude = 151.2093 // Sydney longitude
         WeatherService().fetchWeather(latitude: latitude, longitude: longitude) { result in
             switch result {
             case .success(let response):
@@ -59,6 +70,14 @@ struct WeatherView: View {
                 print("Error fetching weather: \(error)")
             }
         }
+    }
+    
+    private func convertTime(timeInterval: TimeInterval, timezoneOffset: Int) -> String {
+        let date = Date(timeIntervalSince1970: timeInterval)
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: timezoneOffset + 36000) // Sydney GMT+10
+        dateFormatter.dateFormat = "h:mm a"
+        return dateFormatter.string(from: date)
     }
 }
 
@@ -165,19 +184,32 @@ class WeatherService {
 
 struct WeatherResponse: Decodable {
     let current: CurrentWeather
+    let hourly: [HourlyWeather]
+    let timezone_offset: Int  // 时区偏移量
+
     struct CurrentWeather: Decodable {
         let temp: Double
-        let weather: [Weather]
-        let wind_speed: Double
+        let feels_like: Double
+        let uvi: Double
+        let humidity: Int
         let sunrise: TimeInterval
         let sunset: TimeInterval
+        let weather: [WeatherDetail]
     }
     
-    struct Weather: Decodable {
+    struct HourlyWeather: Decodable {
+        let dt: TimeInterval
+        let temp: Double
+        let pop: Double  
+        let weather: [WeatherDetail]
+    }
+    
+    struct WeatherDetail: Decodable {
         let description: String
         let icon: String
     }
 }
+
 
 
 
