@@ -24,11 +24,11 @@ struct WeatherView: View {
             .padding()
             
             if let weather = weatherResponse {
-                let formattedTemp = String(format: "%.1f°C", weather.current.temp - 273.15) // 转换为摄氏度
+                let formattedTemp = String(format: "%.1f°C", weather.current.temp)
                 Text("Temperature: \(formattedTemp)")
                     .font(.title)
                 Text("Description: \(weather.current.weather.first?.description ?? "N/A")")
-                Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like - 273.15))")
+                Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like))")
                 Text("UV Index: \(weather.current.uvi)")
                 Text("Humidity: \(weather.current.humidity)%")
                 Text("Sunrise: \(convertTime(timeInterval: weather.current.sunrise, timezoneOffset: weather.timezone_offset))")
@@ -39,7 +39,7 @@ struct WeatherView: View {
                         ForEach(weather.hourly, id: \.dt) { hour in
                             VStack {
                                 Text("\(convertTime(timeInterval: hour.dt, timezoneOffset: weather.timezone_offset))")
-                                Text("\(String(format: "%.1f°C", hour.temp - 273.15))")
+                                Text("\(String(format: "%.1f°C", hour.temp))")
                                 Text("Pop: \(Int(hour.pop * 100))%")
                                 Image(systemName: weatherIconMapping[hour.weather.first?.icon ?? "cloud"] ?? "cloud.fill")
                                     .resizable()
@@ -52,6 +52,7 @@ struct WeatherView: View {
             } else {
                 Text("Loading weather data...")
             }
+
         }
         .onAppear(perform: loadWeather)
         .padding()
@@ -148,7 +149,7 @@ struct SearchBarView: View {
 }
 
 class WeatherService {
-    // 使用您的实际 API 密钥
+    // API key
     let apiKey = "645b6c195d49ee0b1f364003c7887e44"
     
     func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
@@ -185,7 +186,7 @@ class WeatherService {
 struct WeatherResponse: Decodable {
     let current: CurrentWeather
     let hourly: [HourlyWeather]
-    let timezone_offset: Int  // 时区偏移量
+    let timezone_offset: Int  
 
     struct CurrentWeather: Decodable {
         let temp: Double
