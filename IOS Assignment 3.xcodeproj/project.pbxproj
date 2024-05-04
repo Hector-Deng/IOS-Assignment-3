@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B0BE5F62BE5C0D600373ED8 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0BE5F52BE5C0D600373ED8 /* MapView.swift */; };
 		FE3201B52BE07DFA004A6516 /* IOS_Assignment_3App.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3201B42BE07DFA004A6516 /* IOS_Assignment_3App.swift */; };
 		FE3201B72BE07DFA004A6516 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3201B62BE07DFA004A6516 /* ContentView.swift */; };
 		FE3201B92BE07DFC004A6516 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE3201B82BE07DFC004A6516 /* Assets.xcassets */; };
@@ -15,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5B0BE5F52BE5C0D600373ED8 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		FE3201B12BE07DFA004A6516 /* IOS Assignment 3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "IOS Assignment 3.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE3201B42BE07DFA004A6516 /* IOS_Assignment_3App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOS_Assignment_3App.swift; sourceTree = "<group>"; };
 		FE3201B62BE07DFA004A6516 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,6 +59,7 @@
 				FE3201B62BE07DFA004A6516 /* ContentView.swift */,
 				FE3201C22BE085AD004A6516 /* WeatherView.swift */,
 				FE3201B82BE07DFC004A6516 /* Assets.xcassets */,
+				5B0BE5F52BE5C0D600373ED8 /* MapView.swift */,
 				FE3201BA2BE07DFC004A6516 /* Preview Content */,
 			);
 			path = "IOS Assignment 3";
@@ -141,6 +144,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE3201C32BE085AD004A6516 /* WeatherView.swift in Sources */,
+				5B0BE5F62BE5C0D600373ED8 /* MapView.swift in Sources */,
 				FE3201B72BE07DFA004A6516 /* ContentView.swift in Sources */,
 				FE3201B52BE07DFA004A6516 /* IOS_Assignment_3App.swift in Sources */,
 			);

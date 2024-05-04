@@ -53,12 +53,24 @@ struct WeatherView: View {
                 }
             }
             .navigationBarTitle("Weather", displayMode: .inline)
-            .navigationBarItems(trailing: Button(action: {
-                loadWeather()
-            }) {
-                Image(systemName: "arrow.clockwise")
-            })
-        }
+            .navigationBarItems(trailing: HStack {
+                            // Refresh button
+                            Button(action: {
+                                loadWeather()
+                            }) {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            
+                            // Space between buttons (optional)
+                            Spacer(minLength: 10)
+
+                            // NavigationLink to MapsView with map icon
+                            NavigationLink(destination: MapView()) {
+                                Image(systemName: "map.fill")
+                                    .foregroundColor(.blue) // Customize color if needed
+                            }
+                        })
+                    }
         .onAppear(perform: loadWeather)
     }
 
