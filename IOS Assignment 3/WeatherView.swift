@@ -47,8 +47,8 @@ struct WeatherView: View {
     }
 
     private func loadWeather() {
-        let latitude = 33.44  // 示例纬度
-        let longitude = -94.04 // 示例经度
+        let latitude = 33.44  
+        let longitude = -94.04 
         WeatherService().fetchWeather(latitude: latitude, longitude: longitude) { result in
             switch result {
             case .success(let response):
@@ -129,7 +129,7 @@ struct SearchBarView: View {
 }
 
 class WeatherService {
-    // 使用您的实际 API 密钥
+    // API KEY
     let apiKey = "645b6c195d49ee0b1f364003c7887e44"
     
     func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
