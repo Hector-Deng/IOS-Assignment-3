@@ -2,38 +2,40 @@
 //  WeatherView.swift
 //  IOS Assignment 3
 //
-//  
+//
 //
 
 import SwiftUI
- 
+import Foundation
+
+
 struct WeatherView: View {
-    @State private var weatherResponse: WeatherResponse?
-    @State private var city: String = "Sydney"
+    @ObservedObject var viewModel: WeatherViewModel = WeatherViewModel()
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack {
-                    SearchBarView(searchText: $city)
-                        .padding(.horizontal)
-                        .padding(.top, 20)
+                    SearchBarView(searchText: $viewModel.city, searchAction: {
+                        viewModel.fetchLocation(for: viewModel.city)
+                    })
+                    .padding(.top, 20)
 
-                    if let weather = weatherResponse {
+                    if let weather = viewModel.weatherResponse {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("\(city)")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
+                            HStack {
+                                Text("\(String(format: "%.0f", weather.current.temp))°")
+                                    .font(.system(size: 60))
+                                    .fontWeight(.bold)
+                                Spacer()
+                                Image(systemName: weatherIconMapping[weather.current.weather.first?.icon ?? "cloud"] ?? "cloud.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 60)
+                            }
+                            .padding()
 
-                            Text("Temperature: \(String(format: "%.1f°C", weather.current.temp))")
-                                .font(.title)
-                            Text("Description: \(weather.current.weather.first?.description ?? "N/A")")
-                            Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like))")
-                            Text("UV Index: \(weather.current.uvi)")
-                            Text("Humidity: \(weather.current.humidity)%")
-                            Text("Sunrise: \(convertTime(timeInterval: weather.current.sunrise, timezoneOffset: weather.timezone_offset))")
-                            Text("Sunset: \(convertTime(timeInterval: weather.current.sunset, timezoneOffset: weather.timezone_offset))")
-
+                            DetailBox(weather: weather)
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack {
                                     ForEach(weather.hourly, id: \.dt) { hour in
@@ -42,6 +44,8 @@ struct WeatherView: View {
                                 }
                                 .padding()
                             }
+
+                            EnvironmentalFactorsBox(weather: weather)
                         }
                         .padding()
                     } else {
@@ -53,31 +57,43 @@ struct WeatherView: View {
                 }
             }
             .navigationBarTitle("Weather", displayMode: .inline)
-            .navigationBarItems(trailing: Button(action: {
-                loadWeather()
-            }) {
-                Image(systemName: "arrow.clockwise")
-            })
         }
-        .onAppear(perform: loadWeather)
     }
+}
 
-    private func loadWeather() {
-        let latitude = -33.8688  // Sydney latitude
-        let longitude = 151.2093 // Sydney longitude
-        WeatherService().fetchWeather(latitude: latitude, longitude: longitude) { result in
-            switch result {
-            case .success(let response):
-                DispatchQueue.main.async {
-                    self.weatherResponse = response
-                }
-            case .failure(let error):
-                print("Error fetching weather: \(error)")
+
+struct DetailBox: View {
+    var weather: WeatherResponse
+
+    var body: some View {
+        GroupBox(label: Text("Weather Details").bold()) {
+            VStack(alignment: .leading) {
+                Text("Description: \(weather.current.weather.first?.description ?? "N/A")")
+                Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like))")
+                Text("Sunrise: \(convertTime(timeInterval: weather.current.sunrise, timezoneOffset: weather.timezone_offset))")
+                Text("Sunset: \(convertTime(timeInterval: weather.current.sunset, timezoneOffset: weather.timezone_offset))")
+            }
+            .padding()
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(10)
+        }
+        .padding()
+    }
+}
+
+
+struct EnvironmentalFactorsBox: View {
+    var weather: WeatherResponse
+
+    var body: some View {
+        GroupBox(label: Text("Environmental Factors").bold()) {
+            VStack {
+                SliderView(value: Double(weather.current.humidity), maxValue: 100, label: "Humidity")
+                SliderView(value: weather.current.uvi, maxValue: 10, label: "UV Index")
+                SliderView(value: 50, maxValue: 100, label: "Hyperpigmentation")
             }
         }
     }
-
-    
 }
 
 func convertTime(timeInterval: TimeInterval, timezoneOffset: Int) -> String {
@@ -86,6 +102,31 @@ func convertTime(timeInterval: TimeInterval, timezoneOffset: Int) -> String {
     dateFormatter.timeZone = TimeZone(secondsFromGMT: timezoneOffset + 36000) // Sydney GMT+10
     dateFormatter.dateFormat = "h:mm a"
     return dateFormatter.string(from: date)
+}
+
+struct SliderView: View {
+    var value: Double
+    var maxValue: Double
+    var label: String
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("\(label): \(String(format: "%.0f", value))")
+            
+            ZStack(alignment: .leading) {
+                // colorful bar
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(LinearGradient(gradient: Gradient(colors: [.red, .orange, .yellow, .blue, .green]), startPoint: .leading, endPoint: .trailing))
+                    .frame(height: 6)
+                
+                // slider to show data
+                Slider(value: .constant(value), in: 0...maxValue)
+                    .accentColor(.clear)  // 隐藏默认滑块颜色
+                    .background(Color.clear)
+            }
+        }
+        .padding()
+    }
 }
 
 struct HourlyWeatherCard: View {
@@ -109,108 +150,101 @@ struct HourlyWeatherCard: View {
     }
 }
 
+
 struct SearchBarView: View {
     @Binding var searchText: String
+    var searchAction: () -> Void
 
     var body: some View {
-        ZStack {
-            Rectangle()
-                .foregroundColor(.blue)
-            HStack {
-                TextField("Search for a new destination", text: $searchText)
-                    .padding(.leading, 40)
-                Spacer()
+        HStack {
+            TextField("Enter City name. eg: Sydney", text: $searchText)
+                .padding(10)
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+                .padding(.horizontal)
+
+            Button(action: searchAction) {
                 Image(systemName: "magnifyingglass")
-                Image(systemName: "bell.fill")
+                    .padding()
+                    .background(Color.blue)
+                    .clipShape(Circle())
+                    .foregroundColor(.white)
             }
-            .foregroundColor(.white)
-            .padding()
         }
-        .frame(height: 50)
+        .padding(.horizontal)
     }
 }
 
+
 class WeatherService {
     let apiKey = "645b6c195d49ee0b1f364003c7887e44"
-    
-    func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
+
+
+    // Get the city position info by using geo API
+    func fetchLocation(for city: String, completion: @escaping (Result<(Double, Double), Error>) -> Void) {
+        let formattedCity = city.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
+        let urlString = "http://api.openweathermap.org/geo/1.0/direct?q=\(formattedCity)&limit=1&appid=\(apiKey)"
+        
         guard let url = URL(string: urlString) else {
-            print("Invalid URL")
+            completion(.failure(URLError(.badURL)))
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
-                print("Network request failed: \(error)")
                 completion(.failure(error))
                 return
             }
-            
+
             guard let data = data else {
-                print("No data received")
+                completion(.failure(URLError(.cannotParseResponse)))
                 return
             }
-            
+
+            do {
+                let locations = try JSONDecoder().decode([Location].self, from: data)
+                guard let location = locations.first else {
+                    completion(.failure(URLError(.dataNotAllowed)))
+                    return
+                }
+                completion(.success((location.lat, location.lon)))
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    // Get weather info from OpenWeatherMap
+    func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
+        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
+        
+        guard let url = URL(string: urlString) else {
+            completion(.failure(URLError(.badURL)))
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let data = data else {
+                completion(.failure(URLError(.cannotDecodeContentData)))
+                return
+            }
+
             do {
                 let weatherResponse = try JSONDecoder().decode(WeatherResponse.self, from: data)
                 completion(.success(weatherResponse))
             } catch {
-                print("JSON decoding failed: \(error)")
                 completion(.failure(error))
             }
         }.resume()
     }
 }
 
-struct WeatherResponse: Decodable {
-    let current: CurrentWeather
-    let hourly: [HourlyWeather]
-    let timezone_offset: Int
 
-    struct CurrentWeather: Decodable {
-        let temp: Double
-        let feels_like: Double
-        let uvi: Double
-        let humidity: Int
-        let sunrise: TimeInterval
-        let sunset: TimeInterval
-        let weather: [WeatherDetail]
-    }
-    
-    struct HourlyWeather: Decodable {
-        let dt: TimeInterval
-        let temp: Double
-        let pop: Double
-        let weather: [WeatherDetail]
-    }
-    
-    struct WeatherDetail: Decodable {
-        let description: String
-        let icon: String
-    }
-}
-
-let weatherIconMapping: [String: String] = [
-    "01d": "sun.max.fill", // clear sky day
-    "01n": "moon.stars.fill", // clear sky night
-    "02d": "cloud.sun.fill", // few clouds day
-    "02n": "cloud.moon.fill", // few clouds night
-    "03d": "cloud.fill", // scattered clouds
-    "03n": "cloud.fill", // scattered clouds
-    "04d": "smoke.fill", // broken clouds
-    "04n": "smoke.fill", // broken clouds
-    "09d": "cloud.drizzle.fill", // shower rain
-    "09n": "cloud.drizzle.fill", // shower rain
-    "10d": "cloud.heavyrain.fill", // rain day
-    "10n": "cloud.heavyrain.fill", // rain night
-    "11d": "cloud.bolt.fill", // thunderstorm
-    "11n": "cloud.bolt.fill", // thunderstorm
-    "13d": "snowflake", // snow
-    "13n": "snowflake", // snow
-    "50d": "cloud.fog.fill", // mist
-    "50n": "cloud.fog.fill" // mist
-]
 
 // Preview provider
 struct WeatherView_Previews: PreviewProvider {
@@ -218,4 +252,5 @@ struct WeatherView_Previews: PreviewProvider {
         WeatherView()
     }
 }
+
 
