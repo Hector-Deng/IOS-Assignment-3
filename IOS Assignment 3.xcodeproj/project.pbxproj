@@ -13,6 +13,7 @@
 		FE3201BC2BE07DFC004A6516 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE3201BB2BE07DFC004A6516 /* Preview Assets.xcassets */; };
 		FE3201C32BE085AD004A6516 /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3201C22BE085AD004A6516 /* WeatherView.swift */; };
 		FEE7570A2BE6A99600901FDC /* WeatherViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE757092BE6A99600901FDC /* WeatherViewModel.swift */; };
+		FEE7570D2BE89B2600901FDC /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FEE7570C2BE89B2600901FDC /* Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		FE3201BB2BE07DFC004A6516 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FE3201C22BE085AD004A6516 /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
 		FEE757092BE6A99600901FDC /* WeatherViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherViewModel.swift; sourceTree = "<group>"; };
+		FEE7570C2BE89B2600901FDC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +41,7 @@
 		FE3201A82BE07DFA004A6516 = {
 			isa = PBXGroup;
 			children = (
+				FEE7570C2BE89B2600901FDC /* Info.plist */,
 				FE3201B32BE07DFA004A6516 /* IOS Assignment 3 */,
 				FE3201B22BE07DFA004A6516 /* Products */,
 			);
@@ -133,6 +136,7 @@
 			files = (
 				FE3201BC2BE07DFC004A6516 /* Preview Assets.xcassets in Resources */,
 				FE3201B92BE07DFC004A6516 /* Assets.xcassets in Resources */,
+				FEE7570D2BE89B2600901FDC /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,6 +286,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"IOS Assignment 3/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IOS-Assignment-3-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -310,6 +315,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"IOS Assignment 3/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IOS-Assignment-3-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
