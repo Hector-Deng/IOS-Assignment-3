@@ -8,7 +8,6 @@
 import SwiftUI
 import Foundation
 
-
 struct WeatherView: View {
     @ObservedObject var viewModel: WeatherViewModel = WeatherViewModel()
 
@@ -60,6 +59,7 @@ struct WeatherView: View {
         }
     }
 }
+
 
 
 struct DetailBox: View {
