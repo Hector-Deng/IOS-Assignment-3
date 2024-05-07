@@ -12,7 +12,7 @@ struct WeatherView: View {
     @ObservedObject var viewModel: WeatherViewModel = WeatherViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack {
                     SearchBarView(searchText: $viewModel.city, searchAction: {
@@ -90,7 +90,6 @@ struct EnvironmentalFactorsBox: View {
             VStack {
                 SliderView(value: Double(weather.current.humidity), maxValue: 100, label: "Humidity")
                 SliderView(value: weather.current.uvi, maxValue: 10, label: "UV Index")
-                SliderView(value: 50, maxValue: 100, label: "Hyperpigmentation")
             }
         }
     }
@@ -153,11 +152,13 @@ struct HourlyWeatherCard: View {
 
 struct SearchBarView: View {
     @Binding var searchText: String
+    @State private var isMapNavigationActive = false
     var searchAction: () -> Void
+
 
     var body: some View {
         HStack {
-            TextField("Enter City name. eg: Sydney", text: $searchText)
+            TextField("Enter city name", text: $searchText)
                 .padding(10)
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
@@ -170,79 +171,92 @@ struct SearchBarView: View {
                     .clipShape(Circle())
                     .foregroundColor(.white)
             }
+
+            NavigationLink(destination: MapView(), isActive: $isMapNavigationActive) {
+                Button(action: {
+                    self.isMapNavigationActive = true
+                }) {
+                    Image(systemName: "map.fill")
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                }
+            }
         }
         .padding(.horizontal)
     }
 }
 
 
-class WeatherService {
-    let apiKey = "645b6c195d49ee0b1f364003c7887e44"
 
-
-    // Get the city position info by using geo API
-    func fetchLocation(for city: String, completion: @escaping (Result<(Double, Double), Error>) -> Void) {
-        let formattedCity = city.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
-        let urlString = "http://api.openweathermap.org/geo/1.0/direct?q=\(formattedCity)&limit=1&appid=\(apiKey)"
-        
-        guard let url = URL(string: urlString) else {
-            completion(.failure(URLError(.badURL)))
-            return
-        }
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-
-            guard let data = data else {
-                completion(.failure(URLError(.cannotParseResponse)))
-                return
-            }
-
-            do {
-                let locations = try JSONDecoder().decode([Location].self, from: data)
-                guard let location = locations.first else {
-                    completion(.failure(URLError(.dataNotAllowed)))
-                    return
-                }
-                completion(.success((location.lat, location.lon)))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
-    }
-
-    // Get weather info from OpenWeatherMap
-    func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
-        
-        guard let url = URL(string: urlString) else {
-            completion(.failure(URLError(.badURL)))
-            return
-        }
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-
-            guard let data = data else {
-                completion(.failure(URLError(.cannotDecodeContentData)))
-                return
-            }
-
-            do {
-                let weatherResponse = try JSONDecoder().decode(WeatherResponse.self, from: data)
-                completion(.success(weatherResponse))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
-    }
-}
+//class WeatherService {
+//    let apiKey = "645b6c195d49ee0b1f364003c7887e44"
+//
+//
+//    // Get the city position info by using geo API
+//    func fetchLocation(for city: String, completion: @escaping (Result<(Double, Double), Error>) -> Void) {
+//        let formattedCity = city.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
+//        let urlString = "http://api.openweathermap.org/geo/1.0/direct?q=\(formattedCity)&limit=1&appid=\(apiKey)"
+//        
+//        guard let url = URL(string: urlString) else {
+//            completion(.failure(URLError(.badURL)))
+//            return
+//        }
+//
+//        URLSession.shared.dataTask(with: url) { data, response, error in
+//            if let error = error {
+//                completion(.failure(error))
+//                return
+//            }
+//
+//            guard let data = data else {
+//                completion(.failure(URLError(.cannotParseResponse)))
+//                return
+//            }
+//
+//            do {
+//                let locations = try JSONDecoder().decode([Location].self, from: data)
+//                guard let location = locations.first else {
+//                    completion(.failure(URLError(.dataNotAllowed)))
+//                    return
+//                }
+//                completion(.success((location.lat, location.lon)))
+//            } catch {
+//                completion(.failure(error))
+//            }
+//        }.resume()
+//    }
+//
+//    // Get weather info from OpenWeatherMap
+//    func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
+//        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
+//        
+//        guard let url = URL(string: urlString) else {
+//            completion(.failure(URLError(.badURL)))
+//            return
+//        }
+//
+//        URLSession.shared.dataTask(with: url) { data, response, error in
+//            if let error = error {
+//                completion(.failure(error))
+//                return
+//            }
+//
+//            guard let data = data else {
+//                completion(.failure(URLError(.cannotDecodeContentData)))
+//                return
+//            }
+//
+//            do {
+//                let weatherResponse = try JSONDecoder().decode(WeatherResponse.self, from: data)
+//                completion(.success(weatherResponse))
+//            } catch {
+//                completion(.failure(error))
+//            }
+//        }.resume()
+//    }
+//}
 
 
 

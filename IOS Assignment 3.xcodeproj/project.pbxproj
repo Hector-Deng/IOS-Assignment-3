@@ -13,6 +13,7 @@
 		FE3201BC2BE07DFC004A6516 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE3201BB2BE07DFC004A6516 /* Preview Assets.xcassets */; };
 		FE3201C32BE085AD004A6516 /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3201C22BE085AD004A6516 /* WeatherView.swift */; };
 		FEE7570A2BE6A99600901FDC /* WeatherViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE757092BE6A99600901FDC /* WeatherViewModel.swift */; };
+		FEE757132BEA611F00901FDC /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE757122BEA611F00901FDC /* MapView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		FE3201BB2BE07DFC004A6516 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		FE3201C22BE085AD004A6516 /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
 		FEE757092BE6A99600901FDC /* WeatherViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherViewModel.swift; sourceTree = "<group>"; };
+		FEE757122BEA611F00901FDC /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +41,7 @@
 		FE3201A82BE07DFA004A6516 = {
 			isa = PBXGroup;
 			children = (
+				FEE757122BEA611F00901FDC /* MapView.swift */,
 				FE3201B32BE07DFA004A6516 /* IOS Assignment 3 */,
 				FE3201B22BE07DFA004A6516 /* Products */,
 			);
@@ -145,6 +148,7 @@
 			files = (
 				FE3201C32BE085AD004A6516 /* WeatherView.swift in Sources */,
 				FEE7570A2BE6A99600901FDC /* WeatherViewModel.swift in Sources */,
+				FEE757132BEA611F00901FDC /* MapView.swift in Sources */,
 				FE3201B72BE07DFA004A6516 /* ContentView.swift in Sources */,
 				FE3201B52BE07DFA004A6516 /* IOS_Assignment_3App.swift in Sources */,
 			);
