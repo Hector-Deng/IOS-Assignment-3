@@ -150,29 +150,29 @@ struct HourlyWeatherCard: View {
 }
 
 
+
 struct SearchBarView: View {
     @Binding var searchText: String
     @State private var isMapNavigationActive = false
     var searchAction: () -> Void
 
-
     var body: some View {
-        HStack {
-            TextField("Enter city name", text: $searchText)
-                .padding(10)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding(.horizontal)
+        NavigationStack {
+            HStack {
+                TextField("Enter city name", text: $searchText)
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
 
-            Button(action: searchAction) {
-                Image(systemName: "magnifyingglass")
-                    .padding()
-                    .background(Color.blue)
-                    .clipShape(Circle())
-                    .foregroundColor(.white)
-            }
+                Button(action: searchAction) {
+                    Image(systemName: "magnifyingglass")
+                        .padding()
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                        .foregroundColor(.white)
+                }
 
-            NavigationLink(destination: MapView(), isActive: $isMapNavigationActive) {
                 Button(action: {
                     self.isMapNavigationActive = true
                 }) {
@@ -183,8 +183,11 @@ struct SearchBarView: View {
                         .clipShape(Circle())
                 }
             }
+            .navigationDestination(isPresented: $isMapNavigationActive) {
+                MapView()
+            }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
     }
 }
 
