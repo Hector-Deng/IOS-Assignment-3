@@ -14,6 +14,7 @@
 		FE3201C32BE085AD004A6516 /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3201C22BE085AD004A6516 /* WeatherView.swift */; };
 		FEE7570A2BE6A99600901FDC /* WeatherViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE757092BE6A99600901FDC /* WeatherViewModel.swift */; };
 		FEE757132BEA611F00901FDC /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE757122BEA611F00901FDC /* MapView.swift */; };
+		FEE757312BEE063000901FDC /* FavoriteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE757302BEE063000901FDC /* FavoriteListView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +26,7 @@
 		FE3201C22BE085AD004A6516 /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
 		FEE757092BE6A99600901FDC /* WeatherViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherViewModel.swift; sourceTree = "<group>"; };
 		FEE757122BEA611F00901FDC /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		FEE757302BEE063000901FDC /* FavoriteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteListView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 				FE3201B62BE07DFA004A6516 /* ContentView.swift */,
 				FE3201C22BE085AD004A6516 /* WeatherView.swift */,
 				FEE757092BE6A99600901FDC /* WeatherViewModel.swift */,
+				FEE757302BEE063000901FDC /* FavoriteListView.swift */,
 				FE3201B82BE07DFC004A6516 /* Assets.xcassets */,
 				FE3201BA2BE07DFC004A6516 /* Preview Content */,
 			);
@@ -148,6 +151,7 @@
 			files = (
 				FE3201C32BE085AD004A6516 /* WeatherView.swift in Sources */,
 				FEE7570A2BE6A99600901FDC /* WeatherViewModel.swift in Sources */,
+				FEE757312BEE063000901FDC /* FavoriteListView.swift in Sources */,
 				FEE757132BEA611F00901FDC /* MapView.swift in Sources */,
 				FE3201B72BE07DFA004A6516 /* ContentView.swift in Sources */,
 				FE3201B52BE07DFA004A6516 /* IOS_Assignment_3App.swift in Sources */,
