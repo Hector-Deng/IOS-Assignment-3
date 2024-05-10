@@ -7,6 +7,8 @@ import Combine
 class WeatherViewModel: ObservableObject {
     @Published var weatherResponse: WeatherResponse?
     @Published var city: String = "Sydney"
+    @Published var isFavorite: Bool = false
+    @Published var lastLocation: (lat: Double, lon: Double)?
 
     let apiKey = "645b6c195d49ee0b1f364003c7887e44"
 
@@ -31,12 +33,16 @@ class WeatherViewModel: ObservableObject {
             }
 
             if let locations = try? JSONDecoder().decode([Location].self, from: data), let location = locations.first {
+                DispatchQueue.main.async {
+                    self.lastLocation = (lat: location.lat, lon: location.lon)
+                }
                 self.fetchWeather(latitude: location.lat, longitude: location.lon)
             } else {
                 print("Fail to decode position info")
             }
         }.resume()
     }
+
 
     func fetchWeather(latitude: Double, longitude: Double) {
         let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"

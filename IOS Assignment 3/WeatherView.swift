@@ -20,6 +20,14 @@ struct WeatherView: View {
                     })
                     .padding(.top, 20)
 
+                    Button(action: toggleFavorite) {
+                        Image(systemName: viewModel.isFavorite ? "star.fill" : "star")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(viewModel.isFavorite ? .yellow : .gray)
+                    }
+                    .padding()
+
                     if let weather = viewModel.weatherResponse {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
@@ -58,7 +66,42 @@ struct WeatherView: View {
             .navigationBarTitle("Weather", displayMode: .inline)
         }
     }
+
+    private func toggleFavorite() {
+        print("Toggle favorite called.")
+        viewModel.isFavorite.toggle()
+        print("Favorite status: \(viewModel.isFavorite)")
+        
+        guard let location = viewModel.lastLocation else {
+            print("No location available to save.")
+            return
+        }
+        
+        print("Saving favorite for city: \(viewModel.city) at (\(location.lat), \(location.lon))")
+        saveFavorite(city: viewModel.city, latitude: location.lat, longitude: location.lon)
+    }
+
+    private func saveFavorite(city: String, latitude: Double, longitude: Double) {
+        var favorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] ?? []
+        let newFavorite = [
+            "city": city,
+            "latitude": latitude,
+            "longitude": longitude
+        ] as [String : Any]
+        
+        favorites.append(newFavorite)
+        UserDefaults.standard.set(favorites, forKey: "favoriteList")
+        
+        if let savedFavorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] {
+            print("Favorite added: \(newFavorite)")
+            print("Current favorites: \(savedFavorites)")
+        } else {
+            print("Failed to retrieve favorites after save.")
+        }
+    }
+
 }
+
 
 
 
