@@ -9,6 +9,9 @@ class WeatherViewModel: ObservableObject {
     @Published var city: String = "Sydney"
     @Published var isFavorite: Bool = false
     @Published var lastLocation: (lat: Double, lon: Double)?
+    @Published var weatherData: [String: WeatherResponse] = [:]
+    
+    
 
     let apiKey = "645b6c195d49ee0b1f364003c7887e44"
 
@@ -44,30 +47,38 @@ class WeatherViewModel: ObservableObject {
     }
 
 
+    
     func fetchWeather(latitude: Double, longitude: Double) {
-        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
-        
-        guard let url = URL(string: urlString) else {
-            print("Invaild URL")
+        let key = "\(latitude),\(longitude)"
+        if self.weatherData[key] != nil {
+            // 如果已有天气数据，直接更新 weatherResponse，不再重新请求
+            self.weatherResponse = self.weatherData[key]
             return
         }
 
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
+        URLSession.shared.dataTask(with: URL(string: urlString)!) { [weak self] data, response, error in
+            guard let self = self else { return }
             if let error = error {
                 print("Error in getting weather info: \(error)")
                 return
             }
 
             guard let data = data else {
-                print("Did not receive Weather info")
+                print("Did not receive weather info")
                 return
             }
 
             DispatchQueue.main.async {
-                self.weatherResponse = try? JSONDecoder().decode(WeatherResponse.self, from: data)
+                if let weatherResponse = try? JSONDecoder().decode(WeatherResponse.self, from: data) {
+                    self.weatherData[key] = weatherResponse  // 更新字典中的天气数据
+                    self.weatherResponse = weatherResponse  // 同时更新当前天气响应对象
+                }
             }
         }.resume()
     }
+
+
 }
 
 struct Location: Decodable {
