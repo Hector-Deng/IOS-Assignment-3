@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5BCB9A382BEF494F00F14810 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCB9A372BEF494F00F14810 /* MapView.swift */; };
+		5BCB9A3A2BEF4EB900F14810 /* MapAnnotationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCB9A392BEF4EB900F14810 /* MapAnnotationItem.swift */; };
 		FE3201B52BE07DFA004A6516 /* IOS_Assignment_3App.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3201B42BE07DFA004A6516 /* IOS_Assignment_3App.swift */; };
 		FE3201B72BE07DFA004A6516 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE3201B62BE07DFA004A6516 /* ContentView.swift */; };
 		FE3201B92BE07DFC004A6516 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE3201B82BE07DFC004A6516 /* Assets.xcassets */; };
@@ -16,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5BCB9A372BEF494F00F14810 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		5BCB9A392BEF4EB900F14810 /* MapAnnotationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapAnnotationItem.swift; sourceTree = "<group>"; };
 		FE3201B12BE07DFA004A6516 /* IOS Assignment 3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "IOS Assignment 3.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE3201B42BE07DFA004A6516 /* IOS_Assignment_3App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOS_Assignment_3App.swift; sourceTree = "<group>"; };
 		FE3201B62BE07DFA004A6516 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -55,12 +59,14 @@
 		FE3201B32BE07DFA004A6516 /* IOS Assignment 3 */ = {
 			isa = PBXGroup;
 			children = (
+				5BCB9A372BEF494F00F14810 /* MapView.swift */,
 				FE3201B42BE07DFA004A6516 /* IOS_Assignment_3App.swift */,
 				FE3201B62BE07DFA004A6516 /* ContentView.swift */,
 				FE3201C22BE085AD004A6516 /* WeatherView.swift */,
 				FEE757092BE6A99600901FDC /* WeatherViewModel.swift */,
 				FE3201B82BE07DFC004A6516 /* Assets.xcassets */,
 				FE3201BA2BE07DFC004A6516 /* Preview Content */,
+				5BCB9A392BEF4EB900F14810 /* MapAnnotationItem.swift */,
 			);
 			path = "IOS Assignment 3";
 			sourceTree = "<group>";
@@ -145,7 +151,9 @@
 			files = (
 				FE3201C32BE085AD004A6516 /* WeatherView.swift in Sources */,
 				FEE7570A2BE6A99600901FDC /* WeatherViewModel.swift in Sources */,
+				5BCB9A382BEF494F00F14810 /* MapView.swift in Sources */,
 				FE3201B72BE07DFA004A6516 /* ContentView.swift in Sources */,
+				5BCB9A3A2BEF4EB900F14810 /* MapAnnotationItem.swift in Sources */,
 				FE3201B52BE07DFA004A6516 /* IOS_Assignment_3App.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

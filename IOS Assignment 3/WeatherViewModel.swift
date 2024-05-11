@@ -3,12 +3,14 @@
 //
 import Foundation
 import Combine
+import CoreLocation
 
 class WeatherViewModel: ObservableObject {
     @Published var weatherResponse: WeatherResponse?
     @Published var city: String = "Sydney"
 
     let apiKey = "645b6c195d49ee0b1f364003c7887e44"
+    
 
     func fetchLocation(for city: String) {
         let formattedCity = city.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
