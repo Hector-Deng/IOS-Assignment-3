@@ -15,18 +15,16 @@ struct WeatherView: View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    SearchBarView(searchText: $viewModel.city, searchAction: {
-                        viewModel.fetchLocation(for: viewModel.city)
-                    })
+                    SearchBarView(
+                        searchText: $viewModel.city,
+                        searchAction: {
+                            viewModel.fetchLocation(for: viewModel.city)
+                        },
+                        toggleFavorite: toggleFavorite,
+                        isFavorite: viewModel.isFavorite
+                    )
                     .padding(.top, 20)
 
-                    Button(action: toggleFavorite) {
-                        Image(systemName: viewModel.isFavorite ? "star.fill" : "star")
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .foregroundColor(viewModel.isFavorite ? .yellow : .gray)
-                    }
-                    .padding()
 
                     if let weather = viewModel.weatherResponse {
                         VStack(alignment: .leading, spacing: 10) {
@@ -68,39 +66,37 @@ struct WeatherView: View {
     }
 
     private func toggleFavorite() {
-        print("Toggle favorite called.")
-        viewModel.isFavorite.toggle()
-        print("Favorite status: \(viewModel.isFavorite)")
-        
-        guard let location = viewModel.lastLocation else {
-            print("No location available to save.")
-            return
+            print("Toggle favorite called from WeatherView.")
+            viewModel.isFavorite.toggle()
+            print("Favorite status after toggle: \(viewModel.isFavorite)")
+            
+            if viewModel.isFavorite {
+                guard let location = viewModel.lastLocation else {
+                    print("No location available to save.")
+                    return
+                }
+                print("Saving favorite for city: \(viewModel.city) at (\(location.lat), \(location.lon))")
+                saveFavorite(city: viewModel.city, latitude: location.lat, longitude: location.lon)
+            } else {
+                print("Removing favorite for city: \(viewModel.city)")
+                removeFavorite(city: viewModel.city)
+            }
         }
-        
-        print("Saving favorite for city: \(viewModel.city) at (\(location.lat), \(location.lon))")
-        saveFavorite(city: viewModel.city, latitude: location.lat, longitude: location.lon)
-    }
 
-    private func saveFavorite(city: String, latitude: Double, longitude: Double) {
-        var favorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] ?? []
-        let newFavorite = [
-            "city": city,
-            "latitude": latitude,
-            "longitude": longitude
-        ] as [String : Any]
-        
-        favorites.append(newFavorite)
-        UserDefaults.standard.set(favorites, forKey: "favoriteList")
-        
-        if let savedFavorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] {
-            print("Favorite added: \(newFavorite)")
-            print("Current favorites: \(savedFavorites)")
-        } else {
-            print("Failed to retrieve favorites after save.")
+
+        private func saveFavorite(city: String, latitude: Double, longitude: Double) {
+            var favorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] ?? []
+            let newFavorite = ["city": city, "latitude": latitude, "longitude": longitude] as [String : Any]
+            favorites.append(newFavorite)
+            UserDefaults.standard.set(favorites, forKey: "favoriteList")
+        }
+
+        private func removeFavorite(city: String) {
+            var favorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] ?? []
+            favorites.removeAll(where: { $0["city"] as? String == city })
+            UserDefaults.standard.set(favorites, forKey: "favoriteList")
         }
     }
-
-}
 
 
 
@@ -198,6 +194,8 @@ struct SearchBarView: View {
     @Binding var searchText: String
     @State private var isMapNavigationActive = false
     var searchAction: () -> Void
+    var toggleFavorite: () -> Void
+    var isFavorite: Bool
 
     var body: some View {
         NavigationStack {
@@ -216,6 +214,8 @@ struct SearchBarView: View {
                         .foregroundColor(.white)
                 }
 
+
+
                 Button(action: {
                     self.isMapNavigationActive = true
                 }) {
@@ -225,14 +225,26 @@ struct SearchBarView: View {
                         .background(Color.blue)
                         .clipShape(Circle())
                 }
+                
+                Button(action: {
+                                    print("Favorite button tapped.")
+                                    toggleFavorite()
+                                }) {
+                                    Image(systemName: isFavorite ? "star.fill" : "star")
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                        .foregroundColor(isFavorite ? .yellow : .gray)
+                                }
             }
             .navigationDestination(isPresented: $isMapNavigationActive) {
                 MapView()
             }
             .padding(.horizontal)
+            
         }
     }
 }
+
 
 
 

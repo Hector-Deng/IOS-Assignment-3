@@ -6,7 +6,7 @@ import Combine
 
 class WeatherViewModel: ObservableObject {
     @Published var weatherResponse: WeatherResponse?
-    @Published var city: String = "Sydney"
+    @Published var city: String = ""
     @Published var isFavorite: Bool = false
     @Published var lastLocation: (lat: Double, lon: Double)?
     @Published var weatherData: [String: WeatherResponse] = [:]
@@ -51,7 +51,6 @@ class WeatherViewModel: ObservableObject {
     func fetchWeather(latitude: Double, longitude: Double) {
         let key = "\(latitude),\(longitude)"
         if self.weatherData[key] != nil {
-            // 如果已有天气数据，直接更新 weatherResponse，不再重新请求
             self.weatherResponse = self.weatherData[key]
             return
         }
@@ -71,8 +70,8 @@ class WeatherViewModel: ObservableObject {
 
             DispatchQueue.main.async {
                 if let weatherResponse = try? JSONDecoder().decode(WeatherResponse.self, from: data) {
-                    self.weatherData[key] = weatherResponse  // 更新字典中的天气数据
-                    self.weatherResponse = weatherResponse  // 同时更新当前天气响应对象
+                    self.weatherData[key] = weatherResponse  //update weather in weatherdata
+                    self.weatherResponse = weatherResponse  // Update the weatherResponse
                 }
             }
         }.resume()
