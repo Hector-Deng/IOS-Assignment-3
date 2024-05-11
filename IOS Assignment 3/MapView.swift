@@ -6,30 +6,51 @@ struct MapView: View {
     @State private var tappedCoordinate: CLLocationCoordinate2D?
     @State private var locationString: String = ""
     @State private var isLoadingLocation: Bool = false
-    
+    @State private var isWeatherDisplayed: Bool = true // State to control weather information visibility
+
     var body: some View {
         VStack {
             MapKitView(tappedCoordinate: $tappedCoordinate, locationString: $locationString, isLoadingLocation: $isLoadingLocation)
                 .edgesIgnoringSafeArea(.all)
                 .onTapGesture {
                     // To handle tap gesture on the map
+                    isWeatherDisplayed=true
                     print("Tapped on the map")
                     if let coordinate = tappedCoordinate {
                         fetchLocationAndWeather(latitude: coordinate.latitude, longitude: coordinate.longitude)
                     }
                 }
+                .frame(maxHeight: .infinity) // Ensure the map fills the available space
             
-            if !locationString.isEmpty {
-                Text("Location: \(locationString)")
-            }
-            
-            if let weatherResponse = weatherViewModel.weatherResponse {
+            if isWeatherDisplayed, let weatherResponse = weatherViewModel.weatherResponse {
                 let roundedTemperature = String(format: "%.1f", weatherResponse.current.temp)
-                Text("Current Temperature: \(roundedTemperature) °C")
-                Text("Weather: \(weatherResponse.current.weather[0].description)")
-            } else {
-                Text("No weather information available")
-                    .padding()
+                HStack {
+                    Image(systemName: "location.fill")
+                    Text(locationString)
+                }
+                
+                HStack {
+                    Image(systemName: "thermometer")
+                    Text("Temperature: \(roundedTemperature) °C")
+                }
+    
+                HStack {
+                    Image(systemName: "cloud.fill")
+                    Text("Weather: \(weatherResponse.current.weather[0].description)")
+                }
+                
+                // Dismiss button for the weather information
+                Button(action: {
+                    // Dismiss the weather information
+                    isWeatherDisplayed = false
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.red)
+                        .font(.title2)
+                        .padding(.top, 4)
+
+                        
+                }
             }
         }
     }
@@ -49,6 +70,11 @@ struct MapView: View {
         }
     }
 }
+
+
+
+
+
 
 struct MapKitView: UIViewRepresentable {
     @Binding var tappedCoordinate: CLLocationCoordinate2D?
