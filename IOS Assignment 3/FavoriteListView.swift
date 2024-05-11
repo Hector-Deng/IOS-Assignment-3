@@ -12,32 +12,34 @@ struct FavoriteListView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(favorites, id: \.city) { favorite in
-                    NavigationLink(destination: WeatherView(viewModel: weatherViewModel).onAppear {
-                        weatherViewModel.fetchWeather(latitude: favorite.latitude, longitude: favorite.longitude)
-                    }) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(favorite.city)
-                                    .font(.headline)
-                                Text("\(String(format: "%.0f", weatherViewModel.weatherData["\(favorite.latitude),\(favorite.longitude)"]?.current.temp ?? 0))°C")
-                                    .font(.subheadline)
-                            }
-                            Spacer()
-                            if let icon = weatherViewModel.weatherData["\(favorite.latitude),\(favorite.longitude)"]?.current.weather.first?.icon {
-                                Image(systemName: weatherIconMapping[icon] ?? "cloud")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.blue)
+            ZStack(alignment: .trailing) {
+                List {
+                    ForEach(favorites, id: \.city) { favorite in
+                        NavigationLink(destination: WeatherView(viewModel: weatherViewModel).onAppear {
+                            weatherViewModel.fetchWeather(latitude: favorite.latitude, longitude: favorite.longitude)
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(favorite.city)
+                                        .font(.headline)
+                                    Text("\(String(format: "%.0f", weatherViewModel.weatherData["\(favorite.latitude),\(favorite.longitude)"]?.current.temp ?? 0))°C")
+                                        .font(.subheadline)
+                                }
+                                Spacer()
+                                if let icon = weatherViewModel.weatherData["\(favorite.latitude),\(favorite.longitude)"]?.current.weather.first?.icon {
+                                    Image(systemName: weatherIconMapping[icon] ?? "cloud")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                     }
+                    .onDelete(perform: deleteFavorites)
                 }
-                .onDelete(perform: deleteFavorites)
+                .navigationTitle("Favorite Cities Weather")
             }
-            .navigationTitle("Favorite Cities Weather")
         }
         .onAppear {
             if !hasLoadedWeather {
@@ -46,6 +48,7 @@ struct FavoriteListView: View {
             }
         }
     }
+
 
 
     private func loadFavorites() {

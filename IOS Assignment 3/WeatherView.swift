@@ -59,9 +59,18 @@ struct WeatherView: View {
                             .foregroundColor(.gray)
                         Spacer()
                     }
+                    
                 }
+                
             }
             .navigationBarTitle("Weather", displayMode: .inline)
+            .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                NavigationLink(destination: FavoriteListView(weatherViewModel: viewModel)) {
+                                    Text("Favorite List")
+                    }
+                }
+            }
         }
     }
 
