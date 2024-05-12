@@ -43,7 +43,6 @@
 		FE3201A82BE07DFA004A6516 = {
 			isa = PBXGroup;
 			children = (
-				FEE757122BEA611F00901FDC /* MapView.swift */,
 				FE3201B32BE07DFA004A6516 /* IOS Assignment 3 */,
 				FE3201B22BE07DFA004A6516 /* Products */,
 			);
@@ -61,6 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				FE3201B42BE07DFA004A6516 /* IOS_Assignment_3App.swift */,
+				FEE757122BEA611F00901FDC /* MapView.swift */,
 				FE3201B62BE07DFA004A6516 /* ContentView.swift */,
 				FE3201C22BE085AD004A6516 /* WeatherView.swift */,
 				FEE757092BE6A99600901FDC /* WeatherViewModel.swift */,
