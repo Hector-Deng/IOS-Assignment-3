@@ -215,31 +215,35 @@ struct HourlyWeatherCard: View {
 
 
 struct SearchBarView: View {
-    @Binding var searchText: String// The text in the search bar
-    @State private var isMapNavigationActive = false // State to manage map view navigation
-    var searchAction: () -> Void // Action to search
-    var toggleFavorite: () -> Void // Action to toggle favorite
-    var isFavorite: Bool //Indicates the current location is a favorite or not
-    @State private var isValid = true
+    @Binding var searchText: String
+    @State private var userInput: String = ""
+    @State private var isMapNavigationActive = false
+    var searchAction: () -> Void
+    var toggleFavorite: () -> Void
+    var isFavorite: Bool
+    @State private var errorMessage: String? // error message for wrong input
 
     var body: some View {
-        NavigationStack {
+        VStack {
             HStack {
-                TextField("Enter city name", text: $searchText)
-                .onChange(of: searchText) { newValue in
-                    let formattedText = formatCityName(newValue)
-                    searchText = formattedText
-                    isValid = !formattedText.isEmpty
-                }
-                .padding(10)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding(.horizontal)
+                TextField("Enter city name", text: $userInput)
+                    .padding(10)
+                    .background(errorMessage == nil ? Color(.systemGray6) : Color.red.opacity(0.3)) // Turn red when input is invalid
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .onChange(of: userInput) { newValue, oldValue in
+                        validateCityName(text: newValue)
+                    }
+                    .onSubmit {
+                        if errorMessage == nil {
+                            searchText = userInput.capitalized // Capitlize the first letter
+                        }
+                    }
 
-
+                //SearchButton
                 Button(action: {
-                    // Only search when the text is valid
-                    if !searchText.isEmpty {
+                    if errorMessage == nil && !userInput.isEmpty {
+                        searchText = userInput.capitalized // update searchText then search
                         searchAction()
                     }
                 }) {
@@ -250,9 +254,8 @@ struct SearchBarView: View {
                         .foregroundColor(.white)
                 }
 
-
-
-                Button(action: {//MAP button
+                //MapButton
+                Button(action: {
                     self.isMapNavigationActive = true
                 }) {
                     Image(systemName: "map.fill")
@@ -261,35 +264,45 @@ struct SearchBarView: View {
                         .background(Color.blue)
                         .clipShape(Circle())
                 }
-                
-                Button(action: {//Star button folr favorite
-                                    print("Favorite button tapped.")
-                                    toggleFavorite()
-                                }) {
-                                    Image(systemName: isFavorite ? "star.fill" : "star")
-                                        .resizable()
-                                        .frame(width: 40, height: 40)
-                                        .foregroundColor(isFavorite ? .yellow : .gray)
-                                }
+
+                //FavoriteButton
+                Button(action: {
+                    print("Favorite button tapped.")
+                    toggleFavorite()
+                }) {
+                    Image(systemName: isFavorite ? "star.fill" : "star")
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .foregroundColor(isFavorite ? .yellow : .gray)
+                }
             }
             .navigationDestination(isPresented: $isMapNavigationActive) {
-                MapView()// Navigation destination when the map button is tapped
+                MapView() // Navigation destination when the map button is tapped
             }
             .padding(.horizontal)
-            
+
+            // Error message for invaild input
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .padding()
+            }
         }
     }
 
-    private func formatCityName(_ name: String) -> String {
-        let regex = "^[A-Za-z\\s]+$"
-        if name.range(of: regex, options: .regularExpression) != nil {
-            return name.capitalized
+    // check the the input vaild or not
+    private func validateCityName(text: String) {
+        let regex = "^[A-Za-z\\s]*$" // Allow space and letter
+        if text.range(of: regex, options: .regularExpression) != nil {
+            errorMessage = nil
         } else {
-            return ""
+            errorMessage = "Invalid city name. Please use letters and spaces only."
         }
     }
-
 }
+
+
+
 
 // Preview provider
 struct WeatherView_Previews: PreviewProvider {
