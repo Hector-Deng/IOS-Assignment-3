@@ -230,17 +230,10 @@ struct SearchBarView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                     .padding(.horizontal)
-                    .onChange(of: searchText, perform: { value in
-                        // Check text when it change
-                        self.isValidCity = self.checkCityName(value)
-                    })
 
 
                 Button(action: {
-                    // Only search when the text is valid
-                    if isValidCity {
                         searchAction()
-                    }
                 }) {
                     Image(systemName: "magnifyingglass")
                         .padding()
@@ -279,12 +272,6 @@ struct SearchBarView: View {
         }
     }
 
-    //Check whether the city name starts with a capital letter 
-    //And contains only English letters and spaces.
-    private func checkCityName(_ name: String) -> Bool {
-        let regex = "^[A-Z][a-zA-Z\\s]*$"
-        return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: name)
-    }
 
     
 }
