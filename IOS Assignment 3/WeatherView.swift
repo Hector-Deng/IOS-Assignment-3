@@ -2,186 +2,338 @@
 //  WeatherView.swift
 //  IOS Assignment 3
 //
-//  
+//
 //
 
 import SwiftUI
-
-
-import SwiftUI
+import Foundation
 
 struct WeatherView: View {
-    @State private var weatherResponse: WeatherResponse?
-    @State private var city: String = "Sydney"
+    @ObservedObject var viewModel: WeatherViewModel = WeatherViewModel()
 
     var body: some View {
-        VStack(alignment: .leading){
-            SearchBarView(searchText: $city)
-            HStack {
-                Text("\(city)")
-                    .font(.title)
-                Spacer()
-                Image(systemName: "gear")
+        NavigationStack {
+            ScrollView {
+                VStack {
+                    SearchBarView(
+                        searchText: $viewModel.city,
+                        searchAction: {
+                            viewModel.fetchLocation(for: viewModel.city)
+                        },
+                        toggleFavorite: toggleFavorite,
+                        isFavorite: viewModel.isFavorite
+                    )
+                    .padding(.top, 20)
+
+
+                    if let weather = viewModel.weatherResponse {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text("\(String(format: "%.0f", weather.current.temp))°")
+                                    .font(.system(size: 60))
+                                    .fontWeight(.bold)
+                                Spacer()
+                                Image(systemName: weatherIconMapping[weather.current.weather.first?.icon ?? "cloud"] ?? "cloud.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 60)
+                            }
+                            .padding()
+
+                            DetailBox(weather: weather)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack {
+                                    ForEach(weather.hourly, id: \.dt) { hour in
+                                        HourlyWeatherCard(hour: hour, timezoneOffset: weather.timezone_offset)
+                                    }
+                                }
+                                .padding()
+                            }
+
+                            EnvironmentalFactorsBox(weather: weather)
+                        }
+                        .padding()
+                    } else {
+                        Spacer()
+                        Text("Loading weather data...")
+                            .foregroundColor(.gray)
+                        Spacer()
+                    }
+                    
+                }
+                
+            }
+            .navigationBarTitle("Weather", displayMode: .inline)
+            .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                NavigationLink(destination: FavoriteListView(weatherViewModel: viewModel)) {
+                                    Text("Favorite List")
+                    }
+                }
+            }
+        }
+    }
+
+    private func toggleFavorite() {
+            print("Toggle favorite called from WeatherView.")
+            viewModel.isFavorite.toggle()
+            print("Favorite status after toggle: \(viewModel.isFavorite)")
+            
+            if viewModel.isFavorite {
+                guard let location = viewModel.lastLocation else {
+                    print("No location available to save.")
+                    return
+
+                }
+                print("Saving favorite for city: \(viewModel.city) at (\(location.lat), \(location.lon))")
+                saveFavorite(city: viewModel.city, latitude: location.lat, longitude: location.lon)
+            } else {
+                print("Removing favorite for city: \(viewModel.city)")
+                removeFavorite(city: viewModel.city)
+            }
+        }
+
+
+        private func saveFavorite(city: String, latitude: Double, longitude: Double) {
+            var favorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] ?? []
+            let newFavorite = ["city": city, "latitude": latitude, "longitude": longitude] as [String : Any]
+            favorites.append(newFavorite)
+            UserDefaults.standard.set(favorites, forKey: "favoriteList")
+        }
+
+        private func removeFavorite(city: String) {
+            var favorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] ?? []
+            favorites.removeAll(where: { $0["city"] as? String == city })
+            UserDefaults.standard.set(favorites, forKey: "favoriteList")
+        }
+    }
+
+
+
+
+struct DetailBox: View {
+    var weather: WeatherResponse
+
+    var body: some View {
+        GroupBox(label: Text("Weather Details").bold()) {
+            VStack(alignment: .leading) {
+                Text("Description: \(weather.current.weather.first?.description ?? "N/A")")
+                Text("Feels like: \(String(format: "%.1f°C", weather.current.feels_like))")
+                Text("Sunrise: \(convertTime(timeInterval: weather.current.sunrise, timezoneOffset: weather.timezone_offset))")
+                Text("Sunset: \(convertTime(timeInterval: weather.current.sunset, timezoneOffset: weather.timezone_offset))")
             }
             .padding()
-            if let weather = weatherResponse {
-                let formattedTemp = String(format: "%.1f°C", weather.current.temp)
-                Text(formattedTemp)
-                    .font(.system(size: 70))
-                    .fontWeight(.medium)
-                HStack {
-                    ForEach(weather.current.weather, id: \.description) { weatherDetail in
-                        WeatherDetail(imageName: "cloud.fill", detailText: weatherDetail.description.capitalized)
-                    }
-                    let formattedWindSpeed = String(format: "%.1f km/h", weather.current.wind_speed)
-                    WeatherDetail(imageName: "wind", detailText: formattedWindSpeed)
-                    WeatherDetail(imageName: "sunrise.fill", detailText: "Sunrise: \(Date(timeIntervalSince1970: weather.current.sunrise).formatted())")
-                    WeatherDetail(imageName: "sunset.fill", detailText: "Sunset: \(Date(timeIntervalSince1970: weather.current.sunset).formatted())")
-                }
-            } else {
-                Text("Loading weather data...")
-            }
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(10)
         }
-        .onAppear(perform: loadWeather)
-        Spacer()
+        .padding()
     }
+}
 
-    private func loadWeather() {
-        let latitude = 33.44  
-        let longitude = -94.04 
-        WeatherService().fetchWeather(latitude: latitude, longitude: longitude) { result in
-            switch result {
-            case .success(let response):
-                DispatchQueue.main.async {
-                    self.weatherResponse = response
-                }
-            case .failure(let error):
-                print("Error fetching weather: \(error)")
+
+struct EnvironmentalFactorsBox: View {
+    var weather: WeatherResponse
+
+    var body: some View {
+        GroupBox(label: Text("Environmental Factors").bold()) {
+            VStack {
+                SliderView(value: Double(weather.current.humidity), maxValue: 100, label: "Humidity")
+                SliderView(value: weather.current.uvi, maxValue: 10, label: "UV Index")
             }
         }
     }
 }
 
+func convertTime(timeInterval: TimeInterval, timezoneOffset: Int) -> String {
+    let date = Date(timeIntervalSince1970: timeInterval)
+    let dateFormatter = DateFormatter()
+    dateFormatter.timeZone = TimeZone(secondsFromGMT: timezoneOffset + 36000) // Sydney GMT+10
+    dateFormatter.dateFormat = "h:mm a"
+    return dateFormatter.string(from: date)
+}
 
+struct SliderView: View {
+    var value: Double
+    var maxValue: Double
+    var label: String
 
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("\(label): \(String(format: "%.0f", value))")
+            
+            ZStack(alignment: .leading) {
+                // colorful bar
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(LinearGradient(gradient: Gradient(colors: [.red, .orange, .yellow, .blue, .green]), startPoint: .leading, endPoint: .trailing))
+                    .frame(height: 6)
+                
+                // slider to show data
+                Slider(value: .constant(value), in: 0...maxValue)
+                    .accentColor(.clear)  // 隐藏默认滑块颜色
+                    .background(Color.clear)
+            }
+        }
+        .padding()
+    }
+}
 
+struct HourlyWeatherCard: View {
+    let hour: WeatherResponse.HourlyWeather
+    let timezoneOffset: Int
 
-
-
-// 这只是示意用法，具体图标与天气状态的映射需要根据实际情况来设置
-
-let weatherIconMapping: [String: String] = [
-    "01d": "sun.max.fill", // clear sky day
-    "01n": "moon.stars.fill", // clear sky night
-    "02d": "cloud.sun.fill", // few clouds day
-    "02n": "cloud.moon.fill", // few clouds night
-    "03d": "cloud.fill", // scattered clouds
-    "03n": "cloud.fill", // scattered clouds
-    "04d": "smoke.fill", // broken clouds
-    "04n": "smoke.fill", // broken clouds
-    "09d": "cloud.drizzle.fill", // shower rain
-    "09n": "cloud.drizzle.fill", // shower rain
-    "10d": "cloud.heavyrain.fill", // rain day
-    "10n": "cloud.heavyrain.fill", // rain night
-    "11d": "cloud.bolt.fill", // thunderstorm
-    "11n": "cloud.bolt.fill", // thunderstorm
-    "13d": "snowflake", // snow
-    "13n": "snowflake", // snow
-    "50d": "cloud.fog.fill", // mist
-    "50n": "cloud.fog.fill" // mist
-]
-
-
-struct WeatherDetail: View {
-    let imageName: String
-    let detailText: String
-    
     var body: some View {
         VStack {
-            Image(systemName: imageName)
-                .font(.largeTitle)
-                .foregroundColor(.yellow)
-            Text(detailText)
+            Text(convertTime(timeInterval: hour.dt, timezoneOffset: timezoneOffset))
                 .font(.caption)
+            Image(systemName: weatherIconMapping[hour.weather.first?.icon ?? "cloud"] ?? "cloud.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+            Text("\(String(format: "%.1f°C", hour.temp))")
+            Text("Pop: \(Int(hour.pop * 100))%")
         }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.5)))
+        .shadow(radius: 3)
     }
 }
+
+
 
 struct SearchBarView: View {
     @Binding var searchText: String
-    
+    @State private var isMapNavigationActive = false
+    var searchAction: () -> Void
+    var toggleFavorite: () -> Void
+    var isFavorite: Bool
+
     var body: some View {
-        ZStack {
-            Rectangle()
-                .foregroundColor(.blue)
+        NavigationStack {
             HStack {
-                TextField("Search for a new destination", text: $searchText)
-                    .padding(.leading, 40)
-                Spacer()
-                Image(systemName: "magnifyingglass")
-                Image(systemName: "bell.fill")
-            }
-            .foregroundColor(.white)
-            .padding()
-        }
-        .frame(height: 50)
-    }
-}
+                TextField("Enter city name", text: $searchText)
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
 
-class WeatherService {
-    // API KEY
-    let apiKey = "645b6c195d49ee0b1f364003c7887e44"
-    
-    func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
-        guard let url = URL(string: urlString) else {
-            print("Invalid URL")
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Network request failed: \(error)")
-                completion(.failure(error))
-                return
+                Button(action: searchAction) {
+                    Image(systemName: "magnifyingglass")
+                        .padding()
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                        .foregroundColor(.white)
+                }
+
+
+
+                Button(action: {
+                    self.isMapNavigationActive = true
+                }) {
+                    Image(systemName: "map.fill")
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                }
+                
+                Button(action: {
+                                    print("Favorite button tapped.")
+                                    toggleFavorite()
+                                }) {
+                                    Image(systemName: isFavorite ? "star.fill" : "star")
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                        .foregroundColor(isFavorite ? .yellow : .gray)
+                                }
+
             }
+            .navigationDestination(isPresented: $isMapNavigationActive) {
+                MapView()
+            }
+            .padding(.horizontal)
             
-            guard let data = data else {
-                print("No data received")
-                return
-            }
-            
-            do {
-                let weatherResponse = try JSONDecoder().decode(WeatherResponse.self, from: data)
-                completion(.success(weatherResponse))
-            } catch {
-                print("JSON decoding failed: \(error)")
-                completion(.failure(error))
-            }
-        }.resume()
-    }
-}
-
-
-struct WeatherResponse: Decodable {
-    let current: CurrentWeather
-    struct CurrentWeather: Decodable {
-        let temp: Double
-        let weather: [Weather]
-        let wind_speed: Double
-        let sunrise: TimeInterval
-        let sunset: TimeInterval
-    }
-    
-    struct Weather: Decodable {
-        let description: String
-        let icon: String
+        }
     }
 }
 
 
 
 
-#Preview {
-    WeatherView()
+//class WeatherService {
+//    let apiKey = "645b6c195d49ee0b1f364003c7887e44"
+//
+//
+//    // Get the city position info by using geo API
+//    func fetchLocation(for city: String, completion: @escaping (Result<(Double, Double), Error>) -> Void) {
+//        let formattedCity = city.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
+//        let urlString = "http://api.openweathermap.org/geo/1.0/direct?q=\(formattedCity)&limit=1&appid=\(apiKey)"
+//        
+//        guard let url = URL(string: urlString) else {
+//            completion(.failure(URLError(.badURL)))
+//            return
+//        }
+//
+//        URLSession.shared.dataTask(with: url) { data, response, error in
+//            if let error = error {
+//                completion(.failure(error))
+//                return
+//            }
+//
+//            guard let data = data else {
+//                completion(.failure(URLError(.cannotParseResponse)))
+//                return
+//            }
+//
+//            do {
+//                let locations = try JSONDecoder().decode([Location].self, from: data)
+//                guard let location = locations.first else {
+//                    completion(.failure(URLError(.dataNotAllowed)))
+//                    return
+//                }
+//                completion(.success((location.lat, location.lon)))
+//            } catch {
+//                completion(.failure(error))
+//            }
+//        }.resume()
+//    }
+//
+//    // Get weather info from OpenWeatherMap
+//    func fetchWeather(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
+//        let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
+//        
+//        guard let url = URL(string: urlString) else {
+//            completion(.failure(URLError(.badURL)))
+//            return
+//        }
+//
+//        URLSession.shared.dataTask(with: url) { data, response, error in
+//            if let error = error {
+//                completion(.failure(error))
+//                return
+//            }
+//
+//            guard let data = data else {
+//                completion(.failure(URLError(.cannotDecodeContentData)))
+//                return
+//            }
+//
+//            do {
+//                let weatherResponse = try JSONDecoder().decode(WeatherResponse.self, from: data)
+//                completion(.success(weatherResponse))
+//            } catch {
+//                completion(.failure(error))
+//            }
+//        }.resume()
+//    }
+//}
+
+
+
+// Preview provider
+struct WeatherView_Previews: PreviewProvider {
+    static var previews: some View {
+        WeatherView()
+    }
 }
+
+
