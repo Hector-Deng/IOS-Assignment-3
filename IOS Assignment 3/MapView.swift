@@ -8,6 +8,8 @@ struct MapView: View {
     @State private var isLoadingLocation: Bool = false
     @State private var isWeatherDisplayed: Bool = true // State to control weather information visibility
     @State private var isFavorite: Bool = false // State to track if location is favorite
+    @State private var isActive: Bool = false
+
 
     var body: some View {
         VStack {
@@ -51,17 +53,24 @@ struct MapView: View {
                             .font(.title2)
                             .padding(.top, 4)
                     }
-                    
                     Button(action: {
                         if let coordinate = tappedCoordinate, !locationString.isEmpty {
-                            saveFavorite(city: locationString, latitude: coordinate.latitude, longitude: coordinate.longitude)
-                            isFavorite = true
+                            isActive = true
                         }
                     }) {
-                        Image(systemName: isFavorite ? "star.fill" : "star")
-                            .foregroundColor(isFavorite ? .yellow : .gray)
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.blue)
                             .font(.title2)
                             .padding(.top, 4)
+                    }
+                    .sheet(isPresented: $isActive, onDismiss: {
+                    }) {
+                        WeatherView(viewModel: weatherViewModel)
+                            .onAppear {
+                                if let coordinate = tappedCoordinate {
+                                    weatherViewModel.fetchWeather(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                                }
+                            }
                     }
                 }
             }
@@ -81,13 +90,6 @@ struct MapView: View {
             locationString = "\(placemark.locality ?? ""), \(placemark.country ?? "")"
             weatherViewModel.fetchWeather(latitude: latitude, longitude: longitude)
         }
-    }
-    
-    private func saveFavorite(city: String, latitude: Double, longitude: Double) {
-        var favorites = UserDefaults.standard.array(forKey: "favoriteList") as? [[String: Any]] ?? []
-        let newFavorite = ["city": city, "latitude": latitude, "longitude": longitude] as [String : Any]
-        favorites.append(newFavorite)
-        UserDefaults.standard.set(favorites, forKey: "favoriteList")
     }
 }
 
