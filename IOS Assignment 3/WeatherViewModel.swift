@@ -13,14 +13,14 @@ class WeatherViewModel: ObservableObject {
     
     
 
-    let apiKey = "645b6c195d49ee0b1f364003c7887e44"
+    let apiKey = "645b6c195d49ee0b1f364003c7887e44"//OpenWeatherMap APIkey
 
-    func fetchLocation(for city: String) {
+    func fetchLocation(for city: String) {//Use city name to find the loaction by using geo-API
         let formattedCity = city.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
         let urlString = "http://api.openweathermap.org/geo/1.0/direct?q=\(formattedCity)&limit=1&appid=\(apiKey)"
         
         guard let url = URL(string: urlString) else {
-            print("Invalid URL")
+            print("Invalid URL") 
             return
         }
 
@@ -35,10 +35,12 @@ class WeatherViewModel: ObservableObject {
                 return
             }
 
+            //Decode the loaction info then apply the lat&lon
             if let locations = try? JSONDecoder().decode([Location].self, from: data), let location = locations.first {
                 DispatchQueue.main.async {
                     self.lastLocation = (lat: location.lat, lon: location.lon)
                 }
+                //Search the weather with the lon&lat
                 self.fetchWeather(latitude: location.lat, longitude: location.lon)
             } else {
                 print("Fail to decode position info")
@@ -49,12 +51,14 @@ class WeatherViewModel: ObservableObject {
 
     
     func fetchWeather(latitude: Double, longitude: Double) {
+
         let key = "\(latitude),\(longitude)"
-        if self.weatherData[key] != nil {
-            self.weatherResponse = self.weatherData[key]
+        if self.weatherData[key] != nil {//USe weatherdate to save a list of weather
+            self.weatherResponse = self.weatherData[key]//update current weather object
             return
         }
 
+        //USE lon&lat to get weather from API
         let urlString = "https://api.openweathermap.org/data/3.0/onecall?lat=\(latitude)&lon=\(longitude)&exclude=minutely,daily,alerts&appid=\(apiKey)&units=metric"
         URLSession.shared.dataTask(with: URL(string: urlString)!) { [weak self] data, response, error in
             guard let self = self else { return }
@@ -85,7 +89,7 @@ struct Location: Decodable {
     let lon: Double
 }
 
-struct WeatherResponse: Decodable {
+struct WeatherResponse: Decodable {//Weather data structure
     let current: CurrentWeather
     let hourly: [HourlyWeather]
     let timezone_offset: Int
@@ -113,6 +117,7 @@ struct WeatherResponse: Decodable {
     }
 }
 
+//Weather Icon for different waether(day&night)
 let weatherIconMapping: [String: String] = [
     "01d": "sun.max.fill", // clear sky day
     "01n": "moon.stars.fill", // clear sky night
