@@ -83,6 +83,7 @@ struct WeatherView: View {
                 guard let location = viewModel.lastLocation else {
                     print("No location available to save.")
                     return
+
                 }
                 print("Saving favorite for city: \(viewModel.city) at (\(location.lat), \(location.lon))")
                 saveFavorite(city: viewModel.city, latitude: location.lat, longitude: location.lon)
@@ -244,6 +245,7 @@ struct SearchBarView: View {
                                         .frame(width: 40, height: 40)
                                         .foregroundColor(isFavorite ? .yellow : .gray)
                                 }
+
             }
             .navigationDestination(isPresented: $isMapNavigationActive) {
                 MapView()
