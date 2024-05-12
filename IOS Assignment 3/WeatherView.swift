@@ -217,6 +217,7 @@ struct HourlyWeatherCard: View {
 struct SearchBarView: View {
     @Binding var searchText: String// The text in the search bar
     @State private var isMapNavigationActive = false // State to manage map view navigation
+    @State private var isValidCity = true //State for checking the input is valid
     var searchAction: () -> Void // Action to search
     var toggleFavorite: () -> Void // Action to toggle favorite
     var isFavorite: Bool //Indicates the current location is a favorite or not
@@ -229,8 +230,18 @@ struct SearchBarView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                     .padding(.horizontal)
+                    .onChange(of: searchText, perform: { value in
+                        // Check text when it change
+                        self.isValidCity = self.checkCityName(value)
+                    })
 
-                Button(action: searchAction) {
+
+                Button(action: {
+                    // Only search when the text is valid
+                    if isValidCity {
+                        searchAction()
+                    }
+                }) {
                     Image(systemName: "magnifyingglass")
                         .padding()
                         .background(Color.blue)
@@ -267,6 +278,15 @@ struct SearchBarView: View {
             
         }
     }
+
+    //Check whether the city name starts with a capital letter 
+    //And contains only English letters and spaces.
+    private func checkCityName(_ name: String) -> Bool {
+        let regex = "^[A-Z][a-zA-Z\\s]*$"
+        return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: name)
+    }
+
+    
 }
 
 // Preview provider
